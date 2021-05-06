@@ -1,30 +1,36 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"go-didcomm/service"
-	"log"
-	"os"
-	"strings"
+	"go-didcomm/client"
+	"go-didcomm/db"
+	"go-didcomm/server"
+	"time"
 )
 
-func main() {
-	reader := bufio.NewReader(os.Stdin)
-	for {
-		fmt.Print("Start as service or run client (s/c)?")
-		text, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Print("Encountered error: " + err.Error())
-		}
+func logHeader() {
+	fmt.Println("\x1B[2J\x1B[1;1H")
+	fmt.Println("--------------------------------------")
+	fmt.Println("| DIDCOMM - GO                       |")
+	fmt.Printf("|    SERVER: listening on PORT %s  |\n", server.PORT)
+	fmt.Println("|    CLIENT: waiting for user inputs |")
+	fmt.Println("--------------------------------------\n\n")
+}
 
-		input := strings.Trim(text, "\n")
-		if input == "c" {
-			log.Fatal("client is not implemented yet")
-		} else if input == "s" {
-			service.Start()
-		} else {
-			continue
-		}
+func printMessages() {
+
+}
+
+func main() {
+	db.GetDb()
+
+	go server.Start()
+
+	time.Sleep(10 * time.Millisecond)
+
+	for {
+		logHeader()
+		printMessages()
+		client.Start()
 	}
 }

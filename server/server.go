@@ -1,7 +1,9 @@
-package service
+package server
 
 import (
+	"encoding/json"
 	"fmt"
+	"go-didcomm/db"
 	"log"
 	"net/http"
 	"strings"
@@ -41,7 +43,24 @@ func rejectDisallowedMethods(writer http.ResponseWriter, request *http.Request) 
 }
 
 func didcommHandler(writer http.ResponseWriter, request *http.Request) {
-	rejectDisallowedMethods(writer, request)
+	if request.Method != "POST" {
+		writer.WriteHeader(405)
+	} else {
+		var message db.Message
+		err := json.NewDecoder(request.Body).Decode(&message)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		db.LogMessage(message)
+
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusCreated)
+		json.NewEncoder(writer).Encode(message)
+
+		db.WriteMessage(message)
+	}
 }
 
 // Mocking service endpoint that resolves a dynamically generated did doc until this application
